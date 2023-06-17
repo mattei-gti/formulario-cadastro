@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { FormGroup, TextField, Button, Select, Checkbox, Grid, Typography, Divider, FormControl, InputLabel, MenuItem, RadioGroup, FormControlLabel, FormLabel, Radio } from '@mui/material';
-import './App.css'
+
+import printPDF from '../../Relatorio/print';
+import { FormGroup, Switch, TextField, Button, Select, Checkbox, Grid, Typography, Divider, FormControl, InputLabel, MenuItem, RadioGroup, FormControlLabel, FormLabel, Radio } from '@mui/material';
+import './style.css'
 
 const CadastroForm = () => {
 
-  //const formatedDate = new Date().toISOString().split('T')[0]
 
   const [nome, setNome] = useState('');
   const [CPF, setCPF] = useState('');
@@ -22,6 +23,7 @@ const CadastroForm = () => {
   const [estCivil, setEstCivil] = useState('');
   const [login, setLogin] = useState('');
   const [senha, setSenha] = useState('');
+  const [checked, setChecked] = useState('');
 
   const [interesses, setInteresses] = useState({
     esporte: false,
@@ -42,10 +44,18 @@ const CadastroForm = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    const data = { nome, CPF, email, site, endereco, bairro, cidade, cep, uf, telefone, dataNasc, genero, celular, estCivil, login, senha, interesses }
-    // Aqui você pode adicionar a lógica para enviar os dados do formulário para o servidor
-    console.log(data);
+    const formatedDate = new Date(dataNasc).toLocaleString('pt-BR', { timeZone: 'UTC', year: "numeric", month: "numeric", day: "numeric" });
+    const interessesChecked = Object.entries(interesses)
+      .filter(([_, value]) => value === true)
+      .map(([key]) => key.charAt(0).toUpperCase() + key.slice(1))
+      .join(" - ")
+    const data = { nome, CPF, email, site, endereco, bairro, cidade, cep, uf, telefone, formatedDate, genero, celular, estCivil, login, senha, interessesChecked }
+    printPDF(data)
   };
+
+  function handleClear() {
+    window.location.reload();
+  }
 
   const handleChange = (event) => {
     setInteresses({
@@ -56,6 +66,9 @@ const CadastroForm = () => {
 
   const { esporte, cultura, tecnologia, automoveis, culinaria, politica, policial, tempo, economia, jogos, educacao, viagem, empregos, modaEstilo } = interesses;
 
+  const handleChecked = (event) => {
+    setChecked(event.target.checked);
+  };
   return (
     <>
 
@@ -150,7 +163,6 @@ const CadastroForm = () => {
               </FormControl>
             </Grid>
             <Grid item xs={6}>
-
             </Grid>
             <Grid item xs={6}>
               <TextField
@@ -384,19 +396,23 @@ const CadastroForm = () => {
               </FormGroup>
             </FormControl>
           </Grid>
-
         </fieldset>
         <fieldset className='fieldset'>
+            <FormControlLabel
+              control={
+                <Switch checked={checked} onChange={handleChecked} name="checked" required/>
+              }
+              label="Li as regras de cadastro e autorizo a criaçáo do usuário"
+            />
           <Grid container spacing={2} item xs={12}>
             <Grid item xs={2}>
-              <Button variant="contained" color="primary" type="submit" className='button'>
+              <Button variant="contained" color="primary" type="submit" className='btn' onClick={handleSubmit}>
                 Cadastrar
               </Button>
             </Grid>
-            <Grid item xs={0.1} />
             <Grid item xs={2}>
-              <Button variant="contained" color="primary" onclick="window.history.back()" className='button'>
-                Retornar
+              <Button variant="contained" color="primary" onClick={handleClear} className='btn'>
+                Limpar
               </Button>
             </Grid>
           </Grid>
